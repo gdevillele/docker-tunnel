@@ -20,6 +20,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	dockerTunnelVersion = "0.0.1"
+)
+
 var (
 	// path to private key or empty to use default
 	sshIdentityFile = ""
@@ -29,6 +33,8 @@ var (
 	proxyMode = false
 	// verbose mode (debug logs)
 	verbose = false
+	// version flag (to display the program's version)
+	version bool
 )
 
 func main() {
@@ -37,6 +43,12 @@ func main() {
 		Use:   "docker-tunnel [user@]host",
 		Short: "Docker-tunnel connects you to remote Docker hosts using SSH tunnels",
 		Run: func(cmd *cobra.Command, args []string) {
+			// If version flag is present, print the version and return.
+			if version {
+				showVersion()
+				return
+			}
+
 			if verbose {
 				log.SetLevel(log.DebugLevel)
 			}
@@ -110,6 +122,7 @@ func main() {
 		},
 	}
 
+	rootCmd.Flags().BoolVarP(&version, "version", "", false, "Print version information and quit")
 	rootCmd.Flags().StringVarP(&sshIdentityFile, "sshid", "i", "", "path to private key")
 	rootCmd.Flags().StringVarP(&shell, "shell", "s", "bash", "shell to open session")
 	rootCmd.Flags().BoolVarP(&proxyMode, "proxy", "p", false, "proxy mode (don't start shell session)")
@@ -234,4 +247,8 @@ func forward(conn net.Conn, sshClient *ssh.Client, remoteAddr string) error {
 	}()
 
 	return nil
+}
+
+func showVersion() {
+	fmt.Printf("docker-tunnel version %s\n", dockerTunnelVersion)
 }
